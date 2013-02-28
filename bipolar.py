@@ -1,51 +1,97 @@
 #!/usr/bin/env python
 
+"""
+Copyright 2012 endolith at gmail com
+Copyright 2009 Ged Ridgway at gmail com
+
+Translation and modification of 
+http://www.mathworks.com/matlabcentral/fileexchange/26026-bipolar-colormap
+
+Based on Manja Lehmann's hand-crafted colormap for cortical visualisation
+"""
+
 from __future__ import division
 import scipy
 from matplotlib import cm
 
 def bipolar(lutsize=256, n=0.333, interp=[]):
     """
-    bipolar: symmetric/diverging/bipolar colormap, with neutral central color.
+    Bipolar hot/cold colormap, with neutral central color.
     
-     Usage: cm = bipolar(lutsize, n, interp)
-      n is the gray value for the neutral middle of the colormap, default 1/3.
-      m is the number of rows in the colormap, defaulting to copy the current
-        colormap, or the colormap that MATLAB defaults for new figures.
-      interp is the method used to interpolate the colors, see interp1.
+    This colormap is meant for visualizing diverging data; positive 
+    and negative deviations from a central value.  It is similar to a 
+    blackbody colormap for positive values, but with a complementary 
+    "cold" colormap for negative values.
     
-     The colormap goes from cyan-blue-neutral-red-yellow if neutral is < 0.5
-     (the default) and from blue-cyan-neutral-yellow-red if neutral > 0.5.
+    Parameters
+    ----------
+    lutsize : int
+        The number of elements in the colormap lookup table. (Default is 256.)
+    n : float
+        The gray value for the neutral middle of the colormap.  (Default is 
+        1/3.)
+        The colormap goes from cyan-blue-neutral-red-yellow if neutral 
+        is < 0.5, and from blue-cyan-neutral-yellow-red if neutral > 0.5.
+        For shaded 3D surfaces, an `n` near 0.5 is better, because it 
+        minimizes luminance changes that would otherwise obscure shading cues 
+        for determining 3D structure.
+        For 2D heat maps, an `n` near the 0 or 1 extremes is better, for 
+        maximizing luminance change and showing details of the data.
+    interp : str or int, optional
+        Specifies the type of interpolation.
+        ('linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic')
+        or as an integer specifying the order of the spline interpolator
+        to use. Default is 'linear'.  See `scipy.interpolate.interp1d`.
     
-     If neutral is exactly 0.5, then a map which yields a linear increase in
-     intensity when converted to grayscale is produced (as derived in
-     colormap_investigation.m). This colormap should also be reasonably good
-     for colorblind viewers, as it avoids green and is predominantly based on
-     the purple-yellow pairing which is easily discriminated by the two common
-     types of colorblindness. For more details on this, see Brewer (1996):
-     http://www.ingentaconnect.com/content/maney/caj/1996/00000033/00000002/art00002
+    Returns
+    -------
+    out : matplotlib.colors.LinearSegmentedColormap
+        The resulting colormap object
+    
+    Notes
+    -----
+    If neutral is exactly 0.5, then a map which yields a linear increase in
+    intensity when converted to grayscale is produced. This colormap should 
+    also be reasonably good
+    for colorblind viewers, as it avoids green and is predominantly based on
+    the purple-yellow pairing which is easily discriminated by the two common
+    types of colorblindness. [2]_
      
-     [matlab] Examples:
-      surf(peaks)
-      cmx = max(abs(get(gca, 'CLim')));
-      set(gca, 'CLim', [-cmx cmx]);
-      colormap(bipolar)
+    Examples
+    --------
+    >>> from mpl_toolkits.mplot3d import Axes3D
+    >>> from matplotlib import cm
+    >>> import matplotlib.pyplot as plt
+    >>> import numpy as np
+
+    >>> fig = plt.figure()
+    >>> ax = fig.gca(projection='3d')
+    >>> x = y = np.arange(-4, 4, 0.15)
+    >>> x, y = np.meshgrid(x, y)
+    >>> z = (1- x/2 + x**5 + y**3)*exp(-x**2-y**2)
+    >>> surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, linewidth=0.1, 
+    >>>                        vmax=abs(z).max(), vmin=-abs(z).max())
+    >>> fig.colorbar(surf)
+    >>> plt.show()
+    >>> set_cmap(bipolar(201))
+    >>> waitforbuttonpress()        
+    >>> set_cmap(bipolar(201, 0.1)) # dark gray as neutral
+    >>> waitforbuttonpress()
+    >>> set_cmap(bipolar(201, 0.9)) # light gray as neutral
+    >>> waitforbuttonpress()
+    >>> set_cmap(bipolar(201, 0.5)) # grayscale-friendly colormap
     
-      imagesc(linspace(-1, 1,201)) % symmetric data, if not set symmetric CLim
-      colormap(bipolar(201, 0.1)) % dark gray as neutral
-      axis off; colorbar
-      pause(2)
-      colormap(bipolar(201, 0.9)) % light gray as neutral
-      pause(2)
-      colormap(bipolar(201, 0.5)) % grayscale-friendly colormap
-    
-     See also: colormap, jet, interp1, colormap_investigation, dusk
-     dusk is a colormap like bipolar(m, 0.5), in Oliver Woodford's real2rgb:
-      http://www.mathworks.com/matlabcentral/fileexchange/23342
-    
-     Copyright 2009 Ged Ridgway at gmail com
-     Based on Manja Lehmann's hand-crafted colormap for cortical visualisation
-    
+    References
+    ----------
+    .. [1] Lehmann Manja, Crutch SJ, Ridgway GR et al. "Cortical thickness 
+        and voxel-based morphometry in posterior cortical atrophy and typical 
+        Alzheimer's disease", Neurobiology of Aging, 2009,
+        doi:10.1016/j.neurobiolaging.2009.08.017
+    .. [2] Brewer, Cynthia A., "Guidelines for Selecting Colors for 
+        Diverging Schemes on Maps", The Cartographic Journal, Volume 33, 
+        Number 2, December 1996, pp. 79-86(8)
+        http://www.ingentaconnect.com/content/maney/caj/1996/00000033/00000002/art00002
+
     """
     if n < 0.5:
         if not interp:

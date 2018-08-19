@@ -11,9 +11,8 @@ Based on Manja Lehmann's hand-crafted colormap for cortical visualisation
 """
 
 from __future__ import division
-import scipy
 from matplotlib import cm
-from numpy import linspace, size, clip, dstack, concatenate
+import numpy as np
 
 
 # rename to hotcold
@@ -42,7 +41,8 @@ def bipolar(lutsize=1024, neutral=0.333, weight=1, interp=[]):
         maximizing luminance change and showing details of the data.
     weight : float
         The weight of the Bezier curve at the red and blue points.  1 is a
-        normal Bezier curve.  Greater than one gets closer to pure colors and banding, less than one does the opposite
+        normal Bezier curve.  Greater than one gets closer to pure colors and
+        banding, less than one does the opposite
     interp : str or int, optional
         Specifies the type of interpolation.
         ('linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic')
@@ -102,31 +102,33 @@ def bipolar(lutsize=1024, neutral=0.333, weight=1, interp=[]):
     n = neutral
     if n < 0.5:
         if not interp:
-            interp = 'linear' # seems to work well with dark neutral colors  cyan-blue-dark-red-yellow
+            interp = 'linear'  # seems to work well with dark neutral colors
+            # cyan-blue-dark-red-yellow
 
         data = (
-            (0, 1, 1), # cyan
-            (0, 0, 1), # blue
-            (n, n, n), # dark neutral
-            (1, 0, 0), # red
-            (1, 1, 0), # yellow
+            (0, 1, 1),  # cyan
+            (0, 0, 1),  # blue
+            (n, n, n),  # dark neutral
+            (1, 0, 0),  # red
+            (1, 1, 0),  # yellow
         )
     elif n >= 0.5:
         if not interp:
-            interp = 'cubic' # seems to work better with bright neutral colors blue-cyan-light-yellow-red
+            interp = 'cubic'  # seems to work better with bright neutral colors
+            # blue-cyan-light-yellow-red
             # produces bright yellow or cyan rings otherwise
 
         data = (
-            (0, 0, 1), # blue
-            (0, 1, 1), # cyan
-            (n, n, n), # light neutral
-            (1, 1, 0), # yellow
-            (1, 0, 0), # red
+            (0, 0, 1),  # blue
+            (0, 1, 1),  # cyan
+            (n, n, n),  # light neutral
+            (1, 1, 0),  # yellow
+            (1, 0, 0),  # red
         )
     else:
         raise ValueError('n must be 0.0 < n < 1.0')
 
-    t = linspace(0, 1, lutsize/2)
+    t = np.linspace(0, 1, lutsize/2)
 #    t = t**(3)
 
     # Super ugly Bezier curve
@@ -146,9 +148,12 @@ def bipolar(lutsize=1024, neutral=0.333, weight=1, interp=[]):
 
     w = weight
 
-    r1 = ((1 - t)**2*x1 + 2*(1 - t)*t*w*xc + t**2*x2) / ((1 - t)**2 + 2*(1 - t)*t*w + t**2)
-    g1 = ((1 - t)**2*y1 + 2*(1 - t)*t*w*yc + t**2*y2) / ((1 - t)**2 + 2*(1 - t)*t*w + t**2)
-    b1 = ((1 - t)**2*z1 + 2*(1 - t)*t*w*zc + t**2*z2) / ((1 - t)**2 + 2*(1 - t)*t*w + t**2)
+    r1 = (((1 - t)**2*x1 + 2*(1 - t)*t*w*xc + t**2*x2) /
+          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
+    g1 = (((1 - t)**2*y1 + 2*(1 - t)*t*w*yc + t**2*y2) /
+          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
+    b1 = (((1 - t)**2*z1 + 2*(1 - t)*t*w*zc + t**2*z2) /
+          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
 
     x1 = data[2][0]
     y1 = data[2][1]
@@ -162,45 +167,48 @@ def bipolar(lutsize=1024, neutral=0.333, weight=1, interp=[]):
     y2 = data[4][1]
     z2 = data[4][2]
 
-    r2 = ((1 - t)**2*x1 + 2*(1 - t)*t*w*xc + t**2*x2) / ((1 - t)**2 + 2*(1 - t)*t*w + t**2)
-    g2 = ((1 - t)**2*y1 + 2*(1 - t)*t*w*yc + t**2*y2) / ((1 - t)**2 + 2*(1 - t)*t*w + t**2)
-    b2 = ((1 - t)**2*z1 + 2*(1 - t)*t*w*zc + t**2*z2) / ((1 - t)**2 + 2*(1 - t)*t*w + t**2)
+    r2 = (((1 - t)**2*x1 + 2*(1 - t)*t*w*xc + t**2*x2) /
+          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
+    g2 = (((1 - t)**2*y1 + 2*(1 - t)*t*w*yc + t**2*y2) /
+          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
+    b2 = (((1 - t)**2*z1 + 2*(1 - t)*t*w*zc + t**2*z2) /
+          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
 
-    rgb1 = dstack((r1, g1, b1))[0]
-    rgb2 = dstack((r2, g2, b2))[0]
+    rgb1 = np.dstack((r1, g1, b1))[0]
+    rgb2 = np.dstack((r2, g2, b2))[0]
 
-    ynew = concatenate((rgb1[1:][::-1], rgb2))
+    ynew = np.concatenate((rgb1[1:][::-1], rgb2))
 
+    return cm.colors.LinearSegmentedColormap.from_list('bipolar', ynew,
+                                                       lutsize)
 
-    return cm.colors.LinearSegmentedColormap.from_list('bipolar', ynew, lutsize)
 
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
 
-    def relative_luminance((R, G, B)):
+    def relative_luminance(RGB):
+        R, G, B = RGB
         Y = 0.2126 * R + 0.7152 * G + 0.0722 * B
         return Y
 
-    from pylab import *
-
     dx, dy = 0.01, 0.01
 
-
-    def func3(x,y):
+    def func3(x, y):
         # Sinusoid clearly shows edges, bands, or halos in the colormap
-        return sin(x) + sin(y)
+        return np.sin(x) + np.sin(y)
 
-    x = arange(-4.0, 4.0001, dx)
-    y = arange(-4.0, 4.0001, dy)
+    x = np.arange(-4.0, 4.0001, dx)
+    y = np.arange(-4.0, 4.0001, dy)
 
-    X,Y = meshgrid(x, y)
+    X, Y = np.meshgrid(x, y)
 
     Z = func3(X, Y)
-    figure()
-    im = imshow(Z, vmax=abs(Z).max(), vmin=-abs(Z).max(),
-                origin='lower',
-                extent=[-3, 3, -3, 3],
-                cmap=bipolar(neutral=0, lutsize=1024), # my favorite
-                )
-    colorbar()
+    plt.figure()
+    im = plt.imshow(Z, vmax=abs(Z).max(), vmin=-abs(Z).max(),
+                    origin='lower',
+                    extent=[-3, 3, -3, 3],
+                    cmap=bipolar(neutral=0, lutsize=1024),  # my favorite
+                    )
+    plt.colorbar()
 
-    show()
+    plt.show()

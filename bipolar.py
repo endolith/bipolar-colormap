@@ -128,7 +128,7 @@ def bipolar(lutsize=1024, neutral=0.333, weight=1, interp=[]):
     else:
         raise ValueError('n must be 0.0 < n < 1.0')
 
-    t = np.linspace(0, 1, lutsize/2)
+    t = np.linspace(0, 1, lutsize//2)
 #    t = t**(3)
 
     # Super ugly Bezier curve

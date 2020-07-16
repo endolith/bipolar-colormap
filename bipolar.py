@@ -1,4 +1,6 @@
 """
+Hot/cold colormap for diverging data.
+
 Copyright 2012 endolith at gmail com
 Copyright 2009 Ged Ridgway at gmail com
 
@@ -15,7 +17,7 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
     Bipolar hot/cold colormap, with neutral central color.
 
     This colormap is meant for visualizing diverging data; positive
-    and negative deviations from a central value.  It is similar to a
+    and negative deviations from a central value.  It is similar to a "hot"
     blackbody colormap for positive values, but with a complementary
     "cold" colormap for negative values.
 
@@ -48,10 +50,9 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
     -----
     If neutral is exactly 0.5, then a map which yields a linear increase in
     intensity when converted to grayscale is produced. This colormap should
-    also be reasonably good
-    for colorblind viewers, as it avoids green and is predominantly based on
-    the purple-yellow pairing which is easily discriminated by the two common
-    types of colorblindness. [2]_
+    also be reasonably good for colorblind viewers, as it avoids green and is
+    predominantly based on the purple-yellow pairing which is easily
+    discriminated by the two common types of colorblindness. [2]_
 
     Examples
     --------

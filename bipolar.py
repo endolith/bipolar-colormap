@@ -9,7 +9,8 @@ http://www.mathworks.com/matlabcentral/fileexchange/26026-bipolar-colormap
 
 Based on Manja Lehmann's hand-crafted colormap for cortical visualisation
 """
-import scipy
+import numpy as np
+import scipy.interpolate
 from matplotlib import cm
 
 def bipolar(lutsize=256, n=1/3, interp=[]):
@@ -65,18 +66,18 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
     >>> ax = fig.gca(projection='3d')
     >>> x = y = np.arange(-4, 4, 0.15)
     >>> x, y = np.meshgrid(x, y)
-    >>> z = (1- x/2 + x**5 + y**3)*exp(-x**2-y**2)
+    >>> z = (1- x/2 + x**5 + y**3)*np.exp(-x**2-y**2)
     >>> surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, linewidth=0.1,
     >>>                        vmax=abs(z).max(), vmin=-abs(z).max())
     >>> fig.colorbar(surf)
     >>> plt.show()
-    >>> set_cmap(bipolar(201))
-    >>> waitforbuttonpress()
-    >>> set_cmap(bipolar(201, 0.1)) # dark gray as neutral
-    >>> waitforbuttonpress()
-    >>> set_cmap(bipolar(201, 0.9)) # light gray as neutral
-    >>> waitforbuttonpress()
-    >>> set_cmap(bipolar(201, 0.5)) # grayscale-friendly colormap
+    >>> plt.set_cmap(bipolar(201))
+    >>> plt.waitforbuttonpress()
+    >>> plt.set_cmap(bipolar(201, 0.1)) # dark gray as neutral
+    >>> plt.waitforbuttonpress()
+    >>> plt.set_cmap(bipolar(201, 0.9)) # light gray as neutral
+    >>> plt.waitforbuttonpress()
+    >>> plt.set_cmap(bipolar(201, 0.5)) # grayscale-friendly colormap
 
     References
     ----------
@@ -116,33 +117,31 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
     else:
         raise ValueError('n must be 0.0 < n < 1.0')
 
-    xi = linspace(0, 1, size(_data, 0))
+    xi = np.linspace(0, 1, np.size(_data, 0))
     cm_interp = scipy.interpolate.interp1d(xi, _data, axis=0, kind=interp)
-    xnew = linspace(0, 1, lutsize)
+    xnew = np.linspace(0, 1, lutsize)
     ynew = cm_interp(xnew)
 
     # No form of interpolation works without this, but that means the interpolations are not working right.
-    ynew = clip(ynew, 0, 1)
+    ynew = np.clip(ynew, 0, 1)
 
     return cm.colors.LinearSegmentedColormap.from_list('bipolar', ynew, lutsize)
 
 if __name__ == "__main__":
-
-    from pylab import *
+    import matplotlib.pyplot as plt
 
     def func3(x,y):
-        return (1- x/2 + x**5 + y**3)*exp(-x**2-y**2)
+        return (1- x/2 + x**5 + y**3)*np.exp(-x**2-y**2)
 
     # make these smaller to increase the resolution
     dx, dy = 0.05, 0.05
 
-    x = arange(-3.0, 3.0001, dx)
-    y = arange(-3.0, 3.0001, dy)
-    X,Y = meshgrid(x, y)
+    x = np.arange(-3.0, 3.0001, dx)
+    y = np.arange(-3.0, 3.0001, dy)
+    X,Y = np.meshgrid(x, y)
 
     Z = func3(X, Y)
-    pcolor(X, Y, Z, cmap=bipolar(n=1./3, interp='linear'), vmax=abs(Z).max(), vmin=-abs(Z).max())
-    colorbar()
-    axis([-3,3,-3,3])
-
-    show()
+    plt.pcolor(X, Y, Z, cmap=bipolar(n=1./3, interp='linear'), vmax=abs(Z).max(), vmin=-abs(Z).max())
+    plt.colorbar()
+    plt.axis([-3,3,-3,3])
+    plt.show()

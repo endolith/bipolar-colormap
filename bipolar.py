@@ -60,26 +60,26 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
     Examples
     --------
     >>> from mpl_toolkits.mplot3d import Axes3D
-    >>> from matplotlib import cm
     >>> import matplotlib.pyplot as plt
     >>> import numpy as np
+    >>> from bipolar import bipolar
 
-    >>> fig = plt.figure()
-    >>> ax = fig.gca(projection='3d')
     >>> x = y = np.arange(-4, 4, 0.15)
     >>> x, y = np.meshgrid(x, y)
     >>> z = (1 - x/2 + x**5 + y**3) * np.exp(-x**2 - y**2)
-    >>> surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, linewidth=0.1,
-    >>>                        vmax=abs(z).max(), vmin=-abs(z).max())
-    >>> fig.colorbar(surf)
+
+    >>> fig, axs = plt.subplots(2, 2, figsize=(12, 8),
+    ...                         subplot_kw={'projection': '3d'})
+    >>> for ax, neutral in (((0, 0), 1/3),  # Default
+    ...                     ((0, 1), 0.1),  # Dark gray as neutral
+    ...                     ((1, 0), 0.9),  # Light gray as neutral
+    ...                     ((1, 1), 0.5),  # Grayscale-friendly colormap
+    ...                     ):
+    ...     surf = axs[ax].plot_surface(x, y, z, rstride=1, cstride=1,
+    ...                                 vmax=abs(z).max(), vmin=-abs(z).max(),
+    ...                                 cmap=bipolar(neutral=neutral))
+    ...     fig.colorbar(surf, ax=axs[ax])
     >>> plt.show()
-    >>> plt.set_cmap(bipolar(201))
-    >>> plt.waitforbuttonpress()
-    >>> plt.set_cmap(bipolar(201, 0.1)) # dark gray as neutral
-    >>> plt.waitforbuttonpress()
-    >>> plt.set_cmap(bipolar(201, 0.9)) # light gray as neutral
-    >>> plt.waitforbuttonpress()
-    >>> plt.set_cmap(bipolar(201, 0.5)) # grayscale-friendly colormap
 
     References
     ----------

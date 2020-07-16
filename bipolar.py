@@ -99,7 +99,7 @@ def bipolar(lutsize=256, n=1/3, interp=None):
             # cyan-blue-dark-red-yellow
             interp = 'linear'
 
-        _data = (
+        data = (
             (0, 1, 1),  # cyan
             (0, 0, 1),  # blue
             (n, n, n),  # dark neutral
@@ -113,7 +113,7 @@ def bipolar(lutsize=256, n=1/3, interp=None):
             # Produces bright yellow or cyan rings otherwise
             interp = 'cubic'
 
-        _data = (
+        data = (
             (0, 0, 1),  # blue
             (0, 1, 1),  # cyan
             (n, n, n),  # light neutral
@@ -123,8 +123,8 @@ def bipolar(lutsize=256, n=1/3, interp=None):
     else:
         raise ValueError('n must be 0.0 < n < 1.0')
 
-    xi = np.linspace(0, 1, np.size(_data, 0))
-    cm_interp = scipy.interpolate.interp1d(xi, _data, axis=0, kind=interp)
+    xi = np.linspace(0, 1, np.size(data, 0))
+    cm_interp = scipy.interpolate.interp1d(xi, data, axis=0, kind=interp)
     xnew = np.linspace(0, 1, lutsize)
     ynew = cm_interp(xnew)
 

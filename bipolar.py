@@ -13,6 +13,7 @@ import numpy as np
 import scipy.interpolate
 from matplotlib import cm
 
+
 def bipolar(lutsize=256, n=1/3, interp=[]):
     """
     Bipolar hot/cold colormap, with neutral central color.
@@ -66,7 +67,7 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
     >>> ax = fig.gca(projection='3d')
     >>> x = y = np.arange(-4, 4, 0.15)
     >>> x, y = np.meshgrid(x, y)
-    >>> z = (1- x/2 + x**5 + y**3)*np.exp(-x**2-y**2)
+    >>> z = (1 - x/2 + x**5 + y**3) * np.exp(-x**2 - y**2)
     >>> surf = ax.plot_surface(x, y, z, rstride=1, cstride=1, linewidth=0.1,
     >>>                        vmax=abs(z).max(), vmin=-abs(z).max())
     >>> fig.colorbar(surf)
@@ -93,26 +94,30 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
     """
     if n < 0.5:
         if not interp:
-            interp = 'linear' # seems to work well with dark neutral colors  cyan-blue-dark-red-yellow
+            # Seems to work well with dark neutral colors
+            # cyan-blue-dark-red-yellow
+            interp = 'linear'
 
         _data = (
-            (0, 1, 1), # cyan
-            (0, 0, 1), # blue
-            (n, n, n), # dark neutral
-            (1, 0, 0), # red
-            (1, 1, 0), # yellow
+            (0, 1, 1),  # cyan
+            (0, 0, 1),  # blue
+            (n, n, n),  # dark neutral
+            (1, 0, 0),  # red
+            (1, 1, 0),  # yellow
         )
     elif n >= 0.5:
         if not interp:
-            interp = 'cubic' # seems to work better with bright neutral colors blue-cyan-light-yellow-red
-            # produces bright yellow or cyan rings otherwise
+            # Seems to work better with bright neutral colors
+            # blue-cyan-light-yellow-red
+            # Produces bright yellow or cyan rings otherwise
+            interp = 'cubic'
 
         _data = (
-            (0, 0, 1), # blue
-            (0, 1, 1), # cyan
-            (n, n, n), # light neutral
-            (1, 1, 0), # yellow
-            (1, 0, 0), # red
+            (0, 0, 1),  # blue
+            (0, 1, 1),  # cyan
+            (n, n, n),  # light neutral
+            (1, 1, 0),  # yellow
+            (1, 0, 0),  # red
         )
     else:
         raise ValueError('n must be 0.0 < n < 1.0')
@@ -122,26 +127,30 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
     xnew = np.linspace(0, 1, lutsize)
     ynew = cm_interp(xnew)
 
-    # No form of interpolation works without this, but that means the interpolations are not working right.
+    # No form of interpolation works without this, but that means the
+    # interpolations are not working right.
     ynew = np.clip(ynew, 0, 1)
 
-    return cm.colors.LinearSegmentedColormap.from_list('bipolar', ynew, lutsize)
+    return cm.colors.LinearSegmentedColormap.from_list('bipolar', ynew,
+                                                       lutsize)
+
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    def func3(x,y):
-        return (1- x/2 + x**5 + y**3)*np.exp(-x**2-y**2)
+    def func3(x, y):
+        return (1 - x/2 + x**5 + y**3) * np.exp(-x**2 - y**2)
 
-    # make these smaller to increase the resolution
+    # Make these smaller to increase the resolution
     dx, dy = 0.05, 0.05
 
     x = np.arange(-3.0, 3.0001, dx)
     y = np.arange(-3.0, 3.0001, dy)
-    X,Y = np.meshgrid(x, y)
+    X, Y = np.meshgrid(x, y)
 
     Z = func3(X, Y)
-    plt.pcolor(X, Y, Z, cmap=bipolar(n=1./3, interp='linear'), vmax=abs(Z).max(), vmin=-abs(Z).max())
+    plt.pcolor(X, Y, Z, cmap=bipolar(n=1./3, interp='linear'),
+               vmax=abs(Z).max(), vmin=-abs(Z).max())
     plt.colorbar()
-    plt.axis([-3,3,-3,3])
+    plt.axis([-3, 3, -3, 3])
     plt.show()

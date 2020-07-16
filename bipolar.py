@@ -14,7 +14,7 @@ import scipy.interpolate
 from matplotlib import cm
 
 
-def bipolar(lutsize=256, n=1/3, interp=None):
+def bipolar(lutsize=256, neutral=1/3, interp=None):
     """
     Bipolar hot/cold colormap, with neutral central color.
 
@@ -27,15 +27,15 @@ def bipolar(lutsize=256, n=1/3, interp=None):
     ----------
     lutsize : int
         The number of elements in the colormap lookup table. (Default is 256.)
-    n : float
+    neutral : float
         The gray value for the neutral middle of the colormap.  (Default is
         1/3.)
         The colormap goes from cyan-blue-neutral-red-yellow if neutral
-        is < 0.5, and from blue-cyan-neutral-yellow-red if neutral > 0.5.
-        For shaded 3D surfaces, an `n` near 0.5 is better, because it
+        is < 0.5, and from blue-cyan-neutral-yellow-red if `neutral` > 0.5.
+        For shaded 3D surfaces, a `neutral` near 0.5 is better, because it
         minimizes luminance changes that would otherwise obscure shading cues
         for determining 3D structure.
-        For 2D heat maps, an `n` near the 0 or 1 extremes is better, for
+        For 2D heat maps, a `neutral` near the 0 or 1 extremes is better, for
         maximizing luminance change and showing details of the data.
     interp : str or int, optional
         Specifies the type of interpolation.
@@ -93,6 +93,7 @@ def bipolar(lutsize=256, n=1/3, interp=None):
         http://www.ingentaconnect.com/content/maney/caj/1996/00000033/00000002/art00002
 
     """
+    n = neutral
     if n < 0.5:
         if interp is None:
             # Seems to work well with dark neutral colors
@@ -150,7 +151,7 @@ if __name__ == "__main__":
     X, Y = np.meshgrid(x, y)
 
     Z = func3(X, Y)
-    plt.pcolor(X, Y, Z, cmap=bipolar(n=1./3, interp='linear'),
+    plt.pcolor(X, Y, Z, cmap=bipolar(neutral=1./3, interp='linear'),
                vmax=abs(Z).max(), vmin=-abs(Z).max())
     plt.colorbar()
     plt.axis([-3, 3, -3, 3])

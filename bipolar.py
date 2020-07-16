@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Copyright 2012 endolith at gmail com
 Copyright 2009 Ged Ridgway at gmail com
@@ -9,12 +7,10 @@ http://www.mathworks.com/matlabcentral/fileexchange/26026-bipolar-colormap
 
 Based on Manja Lehmann's hand-crafted colormap for cortical visualisation
 """
-
-from __future__ import division
 import scipy
 from matplotlib import cm
 
-def bipolar(lutsize=256, n=0.333, interp=[]):
+def bipolar(lutsize=256, n=1/3, interp=[]):
     """
     Bipolar hot/cold colormap, with neutral central color.
 

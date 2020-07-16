@@ -14,7 +14,7 @@ import scipy.interpolate
 from matplotlib import cm
 
 
-def bipolar(lutsize=256, n=1/3, interp=[]):
+def bipolar(lutsize=256, n=1/3, interp=None):
     """
     Bipolar hot/cold colormap, with neutral central color.
 
@@ -41,7 +41,8 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
         Specifies the type of interpolation.
         ('linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic')
         or as an integer specifying the order of the spline interpolator
-        to use. Default is 'linear'.  See `scipy.interpolate.interp1d`.
+        to use. Default is 'linear' for dark neutral and 'cubic' for light
+        neutral.  See `scipy.interpolate.interp1d`.
 
     Returns
     -------
@@ -93,7 +94,7 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
 
     """
     if n < 0.5:
-        if not interp:
+        if interp is None:
             # Seems to work well with dark neutral colors
             # cyan-blue-dark-red-yellow
             interp = 'linear'
@@ -106,7 +107,7 @@ def bipolar(lutsize=256, n=1/3, interp=[]):
             (1, 1, 0),  # yellow
         )
     elif n >= 0.5:
-        if not interp:
+        if interp is None:
             # Seems to work better with bright neutral colors
             # blue-cyan-light-yellow-red
             # Produces bright yellow or cyan rings otherwise

@@ -83,10 +83,9 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
 
     """
     n = neutral
-    if n < 0.5:
+    if 0 <= n < 0.5:
         if interp is None:
             # Seems to work well with dark neutral colors
-            # cyan-blue-dark-red-yellow
             interp = 'linear'
 
         data = (
@@ -96,10 +95,9 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
             (1, 0, 0),  # red
             (1, 1, 0),  # yellow
         )
-    elif n >= 0.5:
+    elif 0.5 <= n <= 1:
         if interp is None:
             # Seems to work better with bright neutral colors
-            # blue-cyan-light-yellow-red
             # Produces bright yellow or cyan rings otherwise
             interp = 'cubic'
 

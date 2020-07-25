@@ -49,14 +49,6 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
     out : matplotlib.colors.LinearSegmentedColormap
         The resulting colormap object
 
-    Notes
-    -----
-    If neutral is exactly 0.5, then a map which yields a linear increase in
-    intensity when converted to grayscale is produced. This colormap should
-    also be reasonably good for colorblind viewers, as it avoids green and is
-    predominantly based on the purple-yellow pairing which is easily
-    discriminated by the two common types of colorblindness. [2]_
-
     Examples
     --------
     >>> from mpl_toolkits.mplot3d import Axes3D
@@ -73,11 +65,12 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
     >>> for ax, neutral in (((0, 0), 1/3),  # Default
     ...                     ((0, 1), 0.1),  # Dark gray as neutral
     ...                     ((1, 0), 0.9),  # Light gray as neutral
-    ...                     ((1, 1), 0.5),  # Grayscale-friendly colormap
+    ...                     ((1, 1), 2/3),
     ...                     ):
     ...     surf = axs[ax].plot_surface(x, y, z, rstride=1, cstride=1,
     ...                                 vmax=abs(z).max(), vmin=-abs(z).max(),
     ...                                 cmap=bipolar(neutral=neutral))
+    >>>     axs[ax].set_title(f'{neutral:.3f}')
     ...     fig.colorbar(surf, ax=axs[ax])
     >>> plt.show()
 
@@ -87,10 +80,6 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
         and voxel-based morphometry in posterior cortical atrophy and typical
         Alzheimer's disease", Neurobiology of Aging, 2009,
         doi:10.1016/j.neurobiolaging.2009.08.017
-    .. [2] Brewer, Cynthia A., "Guidelines for Selecting Colors for
-        Diverging Schemes on Maps", The Cartographic Journal, Volume 33,
-        Number 2, December 1996, pp. 79-86(8)
-        http://www.ingentaconnect.com/content/maney/caj/1996/00000033/00000002/art00002
 
     """
     n = neutral

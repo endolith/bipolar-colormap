@@ -116,8 +116,7 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
     xnew = np.linspace(0, 1, lutsize)
     ynew = cm_interp(xnew)
 
-    # No form of interpolation works without this, but that means the
-    # interpolations are not working right.
+    # Non-linear interpolation exceeds the RGB cube
     ynew = np.clip(ynew, 0, 1)
 
     return cm.colors.LinearSegmentedColormap.from_list('bipolar', ynew,

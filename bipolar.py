@@ -111,7 +111,7 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
     else:
         raise ValueError('n must be 0.0 < n < 1.0')
 
-    xi = np.linspace(0, 1, np.size(data, 0))
+    xi = np.linspace(0, 1, len(data))
     cm_interp = scipy.interpolate.interp1d(xi, data, axis=0, kind=interp)
     xnew = np.linspace(0, 1, lutsize)
     ynew = cm_interp(xnew)

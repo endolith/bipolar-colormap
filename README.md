@@ -15,7 +15,7 @@ This only implements 2:
 
 ## Examples
 
-![bipolar colormaps of 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 neutral](.\examples\bipolar range.png)
+![bipolar colormaps of 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 neutral](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/bipolar%20range.png)
 
 ## Similar
 
@@ -25,11 +25,11 @@ Comparisons with other conceptually-similar maps from [matplotlib](https://matpl
 
 With dark neutral:
 
-![bipolar colormap vs iceburn, redshift, bkr, bjr](.\examples\dark comparison.png)
+![bipolar colormap vs iceburn, redshift, bkr, bjr](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/dark%20comparison.png)
 
 With light neutral:
 
-![bipolar colormap vs CET_D10, cwr, CET_D9, coolwarm, bwr, RdBu, seismic, fusion](.\examples\light comparison.png)
+![bipolar colormap vs CET_D10, cwr, CET_D9, coolwarm, bwr, RdBu, seismic, fusion](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/light%20comparison.png)
 
 ## Future
 

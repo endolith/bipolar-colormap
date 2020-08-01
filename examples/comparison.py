@@ -2,7 +2,7 @@ import matplotlib.cm as cm
 import cmasher as cmr
 from cmasher.utils import create_cmap_overview
 import colorcet as cc
-from bipolar import bipolar
+from bipolar import bipolar, hotcold
 
 # Full range of bipolar plots
 cmaps = []
@@ -14,13 +14,25 @@ for n in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0):
 create_cmap_overview(cmaps, use_types=False, savefig='bipolar range.png',
                      plot_profile=True, sort=None)
 
+# Full range of hotcold plots
+cmaps = []
+for n in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0):
+    cmap = hotcold(neutral=n)
+    cmap.name = f'hotcold {n}'
+    cmaps.append(cmap)
+
+create_cmap_overview(cmaps, use_types=False, savefig='hotcold range.png',
+                     plot_profile=True, sort=None)
+
 # Bipolar vs other dark-centered hot-cold maps
 cmaps = [('bipolar 0.0', bipolar(neutral=0)),
+         ('hotcold 0.0', hotcold(neutral=0)),
          ('cmr.iceburn', cmr.iceburn),
          ('cmr.redshift', cmr.redshift),
          ('cc.bkr', cc.m_bkr),
          ('cc.bjr', cc.m_CET_D8),
          ('bipolar 0.4', bipolar(neutral=0.4)),
+         ('hotcold 0.4', hotcold(neutral=0.4)),
          ]
 
 for n, (name, cmap) in enumerate(cmaps):
@@ -32,6 +44,7 @@ create_cmap_overview(cmaps, use_types=False, savefig='dark comparison.png',
 
 # Bipolar vs other light-centered hot-cold maps
 cmaps = [('bipolar 1.0', bipolar(neutral=1.0)),
+         ('hotcold 1.0', hotcold(neutral=1.0)),
          ('cc.CET_D10', cc.m_CET_D10),
          ('cc.cwr', cc.m_cwr),
          ('cc.CET_D9', cc.m_CET_D9),

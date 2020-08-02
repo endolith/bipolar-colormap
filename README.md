@@ -15,11 +15,23 @@ This only implements 2:
 
 This is not a modern well-designed colormap; it's not perceptually uniform, does not have uniform lightness steps, and the endpoints are not equal lightness.  But it looks nice for some purposes.
 
-I also have a version with Bézier curves that is smoother and gets rid of the prominent bands, which I will eventually merge into this repo alongside the existing one: https://gist.github.com/endolith/ef948b924abf289287bd  https://www.flickr.com/photos/omegatron/8534628384/  https://www.flickr.com/photos/omegatron/8533520357/ 
+## Removing halos
+
+The original `bipolar()` had "halos" ([Mach bands](https://en.wikipedia.org/wiki/Mach_bands#In_computer_graphics)?) from [going out to the corners of the RGB cube and then making a right angle](https://flic.kr/p/dYGXSR):
+
+![bipolar with halos marked by arrows](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/bipolar%20halos.png)
+
+So I made a version [with Bézier curves through the RGB cube](https://flic.kr/p/e1bcFf) that is smoother and gets rid of the prominent bands, and called it `hotcold()`.  I would recommend this be used instead of `bipolar()`:
+
+![hotcold with no halos](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/hotcold%20no%20halos.png)
+
+It's still not perceptually uniform, but improved.  I think true perceptual uniformity (equally-spaced steps in perceptual colorspace) is overrated, but it would be nice to improve it to have uniform lightness steps, and maybe same-lightness endpoints.
 
 ## Examples
 
 ![bipolar colormaps of 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 neutral](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/bipolar%20range.png)
+
+![hotcold colormaps of 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 neutral](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/hotcold%20range.png)
 
 ## Similar
 

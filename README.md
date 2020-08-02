@@ -27,11 +27,7 @@ Very similar colormap is [FireIce by Joseph Kirk](http://www.mathworks.com/matla
 
 Comparisons with other conceptually-similar maps from [matplotlib](https://matplotlib.org/tutorials/colors/colormaps.html#diverging), [colorcet](https://colorcet.holoviz.org/#Samples), and [CMasher](https://cmasher.readthedocs.io/user/diverging.html):
 
-With dark neutral:
-
 ![bipolar colormap vs iceburn, redshift, bkr, bjr](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/dark%20comparison.png)
-
-With light neutral:
 
 ![bipolar colormap vs CET_D10, cwr, CET_D9, coolwarm, bwr, RdBu, seismic, fusion](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/light%20comparison.png)
 

@@ -12,7 +12,7 @@ for n in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0):
     cmaps.append(cmap)
 
 create_cmap_overview(cmaps, use_types=False, savefig='bipolar range.png',
-                     plot_profile=True, sort=None)
+                     plot_profile=True, sort=None, title="bipolar() range")
 
 # Full range of hotcold plots
 cmaps = []
@@ -22,7 +22,7 @@ for n in (0.0, 0.2, 0.4, 0.6, 0.8, 1.0):
     cmaps.append(cmap)
 
 create_cmap_overview(cmaps, use_types=False, savefig='hotcold range.png',
-                     plot_profile=True, sort=None)
+                     plot_profile=True, sort=None, title="hotcold() range")
 
 # Bipolar vs other dark-centered hot-cold maps
 cmaps = [('bipolar 0.0', bipolar(neutral=0)),
@@ -40,7 +40,7 @@ for n, (name, cmap) in enumerate(cmaps):
     cmaps[n] = cmap
 
 create_cmap_overview(cmaps, use_types=False, savefig='dark comparison.png',
-                     plot_profile=True, sort=None)
+                     plot_profile=True, sort=None, title="Dark neutral maps")
 
 # Bipolar vs other light-centered hot-cold maps
 cmaps = [('bipolar 1.0', bipolar(neutral=1.0)),
@@ -51,10 +51,10 @@ cmaps = [('bipolar 1.0', bipolar(neutral=1.0)),
          ('cc.coolwarm', cc.m_coolwarm),
          ('cm.coolwarm', cm.coolwarm),
          ('cm.bwr', cm.bwr),
-         ('cm.RdBu_r ', cm.RdBu_r),
+         ('cm.RdBu_r', cm.RdBu_r),
          ('cc.bwr', cc.m_CET_D1A),
          ('cm.seismic', cm.seismic),
-         ('cmr.fusion_r ', cmr.fusion_r),
+         ('cmr.fusion_r', cmr.fusion_r),
          ]
 
 for n, (name, cmap) in enumerate(cmaps):
@@ -62,4 +62,4 @@ for n, (name, cmap) in enumerate(cmaps):
     cmaps[n] = cmap
 
 create_cmap_overview(cmaps, use_types=False, savefig='light comparison.png',
-                     plot_profile=True, sort=None)
+                     plot_profile=True, sort=None, title="Light neutral maps")

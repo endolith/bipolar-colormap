@@ -130,15 +130,17 @@ if __name__ == "__main__":
         return (1 - x/2 + x**5 + y**3) * np.exp(-x**2 - y**2)
 
     # Make these smaller to increase the resolution
-    dx, dy = 0.05, 0.05
+    dx, dy = 0.02, 0.02
+    plt.figure(figsize=(8, 6))
 
     x = np.arange(-3.0, 3.0001, dx)
     y = np.arange(-3.0, 3.0001, dy)
     X, Y = np.meshgrid(x, y)
 
     Z = func3(X, Y)
-    plt.pcolor(X, Y, Z, cmap=bipolar(neutral=1./3, interp='linear'),
-               vmax=abs(Z).max(), vmin=-abs(Z).max())
+    cmap = bipolar(neutral=1/3, interp='linear', lutsize=2048)
+    plt.pcolor(X, Y, Z, cmap=cmap, vmax=abs(Z).max(), vmin=-abs(Z).max())
     plt.colorbar()
     plt.axis([-3, 3, -3, 3])
+    plt.tight_layout()
     plt.show()

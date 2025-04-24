@@ -1,4 +1,5 @@
 # bipolar-colormap
+
 Hot and cold colormap for diverging data
 
 This started as a translation of [Bipolar Colormap by Ged Ridgway](http://www.mathworks.com/matlabcentral/fileexchange/26026) into Python, which was inspired by (but not identical to) [Manja Lehmann's hand-crafted colormap for cortical visualisation](https://doi.org/10.1016/j.neurobiolaging.2009.08.017).  The original had 4 different colormap regions:
@@ -42,4 +43,3 @@ Comparisons with other conceptually-similar maps from [matplotlib](https://matpl
 ![bipolar colormap vs iceburn, redshift, bkr, bjr](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/dark%20comparison.png)
 
 ![bipolar colormap vs CET_D10, cwr, CET_D9, coolwarm, bwr, RdBu, seismic, fusion](https://raw.githubusercontent.com/endolith/bipolar-colormap/master/examples/light%20comparison.png)
-

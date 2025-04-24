@@ -1,7 +1,7 @@
 # bipolar-colormap
 Hot and cold colormap for diverging data
 
-This started as a translation of [Bipolar Colormap by Ged Ridgway](http://www.mathworks.com/matlabcentral/fileexchange/26026) into Python.  The original had 4 different colormap regions:
+This started as a translation of [Bipolar Colormap by Ged Ridgway](http://www.mathworks.com/matlabcentral/fileexchange/26026) into Python, which was inspired by (but not identical to) [Manja Lehmann's hand-crafted colormap for cortical visualisation](https://doi.org/10.1016/j.neurobiolaging.2009.08.017).  The original had 4 different colormap regions:
 
 * n < 0.0: Rainbow colormap
 * n < 0.5: Diverging cyan - blue - dark - red - yellow

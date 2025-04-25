@@ -1,7 +1,7 @@
 BSD 2-Clause License
 
 Copyright (c) 2020, endolith
-Copyright (c) 2009, Ged Ridgway
+Copyright (c) 2009, Ged Ridgway [https://www.mathworks.com/matlabcentral/fileexchange/26026-bipolar-colormap]
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

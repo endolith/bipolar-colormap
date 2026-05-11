@@ -1,42 +1,92 @@
-# Creates a GitHub Release when a semantic-version tag (vX.Y.Z) is pushed.
-# Zenodo's GitHub integration archives each published release and assigns a DOI;
-# see README "Citing this repository".
+# On version tags: build wheel/sdist, publish a GitHub Release (notes from the tag
+# and commits since the previous tag), optionally upload to PyPI via Trusted Publishing.
+# Zenodo can archive published releases; see README "Citing this repository".
 
 name: Release
 
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-
-permissions:
-  contents: write
+      - "v*"
 
 jobs:
-  github-release:
+  build:
+    name: Build distribution
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
-      - name: Build sdist and wheel
-        run: |
-          python -m pip install --upgrade pip build
-          python -m build
+      - name: Install build
+        run: python -m pip install --upgrade pip build
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+      - name: Build wheel and sdist
+        run: python -m build
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v7
         with:
-          generate_release_notes: true
-          files: dist/*
-          body: |
-            This release includes a wheel and sdist built with `python -m build`. Install from the downloaded wheel with `pip install ./bipolar_colormap-*.whl`, or from a checkout of this tag with `pip install .`.
+          name: dist
+          path: dist/
 
-            Zenodo will archive this tag if [GitHub integration](https://help.zenodo.org/docs/github/) is enabled for the repository. Use the version DOI from Zenodo in `CITATION.cff` so the GitHub "Cite this repository" panel lists it.
+  github-release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Build release notes from tag and commits
+        run: |
+          TAG_BODY=$(git tag -l --format='%(contents)' "${{ github.ref_name }}")
+          {
+            if [ -n "$TAG_BODY" ]; then
+              printf '%s\n\n' "$TAG_BODY"
+            fi
+            PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -z "$PREV_TAG" ]; then
+              git log --oneline --no-merges
+            else
+              git log --oneline --no-merges "${PREV_TAG}..${{ github.ref_name }}"
+            fi
+            printf '\n---\n\n'
+            printf '%s\n' "Artifacts: wheel and sdist from \`python -m build\` (Hatchling). Install with \`pip install ./bipolar_colormap-*.whl\` or \`pip install .\` from a checkout of this tag."
+            printf '\n%s\n' "If [Zenodo GitHub integration](https://help.zenodo.org/docs/github/) is enabled, this release is archived and receives a version DOI; add that DOI to \`CITATION.cff\` on the default branch for the GitHub citation widget."
+          } > notes.txt
+
+      - name: Create GitHub release
+        run: gh release create "${{ github.ref_name }}" dist/* --notes-file notes.txt --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

@@ -1,0 +1,29 @@
+# Creates a GitHub Release when a semantic-version tag (vX.Y.Z) is pushed.
+# Zenodo's GitHub integration archives each published release and assigns a DOI;
+# see README "Citing this repository".
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          body: |
+            Zenodo will archive this tag if [GitHub integration](https://help.zenodo.org/docs/github/) is enabled for the repository. Use the version DOI from Zenodo in `CITATION.cff` so the GitHub "Cite this repository" panel lists it.

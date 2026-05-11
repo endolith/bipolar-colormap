@@ -10,7 +10,7 @@ For a **DOI** (recommended for long-term archival), use [Zenodo’s GitHub integ
 
 ## Installation
 
-The layout follows the idea of the [matplotlib colormap template](https://github.com/matplotlib/matplotlib-cmap-template) (single importable module) with modern [PEP 517](https://peps.python.org/pep-0517/) metadata in `pyproject.toml`.
+The layout follows the idea of the [matplotlib colormap template](https://github.com/matplotlib/matplotlib-cmap-template) (single importable module) with [PEP 517](https://peps.python.org/pep-0517/) metadata in `pyproject.toml`, built with [Hatchling](https://hatch.pypa.io/latest/config/build/).
 
 From a clone of this repository:
 

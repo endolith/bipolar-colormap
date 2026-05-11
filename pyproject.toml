@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=77"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
 
 [project]
 name = "bipolar-colormap"
@@ -31,5 +31,6 @@ examples = [
 Homepage = "https://github.com/endolith/bipolar-colormap"
 Repository = "https://github.com/endolith/bipolar-colormap.git"
 
-[tool.setuptools]
-py-modules = ["bipolar"]
+# Distribution name is bipolar-colormap; importable module is bipolar.py (not bipolar_colormap.py).
+[tool.hatch.build.targets.wheel]
+only-include = ["bipolar.py"]

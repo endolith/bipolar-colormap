@@ -2,6 +2,12 @@
 
 Hot and cold colormap for diverging data
 
+## Citing this repository
+
+GitHub shows APA and BibTeX from [`CITATION.cff`](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files) via **Cite this repository** on the repo home page.
+
+For a **DOI** (recommended for long-term archival), use [Zenodo’s GitHub integration](https://help.zenodo.org/docs/github/): enable the integration for this repo, then publish a [GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) (or push a `v*` semver tag so the [release workflow](.github/workflows/release.yml) creates one). Zenodo archives each release and issues a version DOI. After the first Zenodo archive, add that DOI to the top-level `doi` field in `CITATION.cff` so citations include it.
+
 This started as a translation of [Bipolar Colormap by Ged Ridgway](http://www.mathworks.com/matlabcentral/fileexchange/26026) into Python, which was inspired by (but not identical to) [Manja Lehmann's hand-crafted colormap for cortical visualisation](https://doi.org/10.1016/j.neurobiolaging.2009.08.017).  The original had 4 different colormap regions:
 
 * n < 0.0: Rainbow colormap

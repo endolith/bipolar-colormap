@@ -25,21 +25,19 @@ def _ratquad_bezier_rgb(p0, p1, p2, w, t):
     return num / den[:, np.newaxis]
 
 
-def _hsl_lightness_rgb(rgb):
-    """HSL lightness L = (max(R,G,B) + min(R,G,B)) / 2; rgb is (n, 3)."""
+def _grayscale_axis_coordinate_rgb(rgb):
+    """Scalar along the achromatic diagonal: (R+G+B)/3 for each row; rgb is (n, 3)."""
     rgb = np.asarray(rgb, dtype=float)
-    mx = np.max(rgb, axis=1)
-    mn = np.min(rgb, axis=1)
-    return (mx + mn) * 0.5
+    return rgb.mean(axis=1)
 
 
-def _resample_uniform_hsl_lightness(rgb_dense, n_samples, rgb_mix=1e-4):
+def _resample_uniform_grayscale_axis(rgb_dense, n_samples, rgb_mix=1e-4):
     """
-    Resample the polyline through rgb_dense so LUT steps advance ~uniformly
-    in cumulative |ΔL| along the path, where L is HSL lightness (the same L as
-    in ``colorsys.rgb_to_hls``). Grays (R=G=B) lie on the RGB diagonal and have
-    L=t. A small Euclidean RGB term keeps spacing well-defined where L is
-    flat along saturated segments (uniform Bézier t still bunches there).
+    Resample the polyline through ``rgb_dense`` so LUT steps advance ~uniformly
+    in cumulative ``|Δm|`` with ``m = (R+G+B)/3`` (projection onto the gray
+    diagonal in RGB). A small Euclidean RGB term keeps spacing well-defined
+    where ``m`` is flat along the path; if the combined metric collapses,
+    fall back to RGB chord length only.
     """
     n_samples = int(n_samples)
     rgb_dense = np.asarray(rgb_dense, dtype=float)
@@ -47,10 +45,10 @@ def _resample_uniform_hsl_lightness(rgb_dense, n_samples, rgb_mix=1e-4):
         raise ValueError('n_samples must be at least 2')
     if len(rgb_dense) < 2:
         return np.repeat(rgb_dense[:1], n_samples, axis=0)
-    L = _hsl_lightness_rgb(rgb_dense)
-    dL = np.abs(np.diff(L))
+    m = _grayscale_axis_coordinate_rgb(rgb_dense)
+    dm = np.abs(np.diff(m))
     drgb = np.linalg.norm(np.diff(rgb_dense, axis=0), axis=1)
-    seg = dL + rgb_mix * drgb
+    seg = dm + rgb_mix * drgb
     cum = np.concatenate([[0.0], np.cumsum(seg)])
     s_max = cum[-1]
     if s_max <= 0:
@@ -202,10 +200,11 @@ def hotcold(lutsize=256, neutral=1/3, interp=None, weight=1.0):
         Rational Bézier weight on the middle control point for each smooth
         segment through the RGB cube (default 1). Larger values pull the path
         toward the middle control. Lookup rows are resampled from a dense
-        uniform-`t` Bézier using ~uniform steps in cumulative HSL lightness
-        change along the path (with a tiny RGB chord term where L is flat),
-        instead of uniform `t` (which bunches samples toward the endpoints;
-        see issue #2).
+        uniform-`t` Bézier using ~uniform steps in cumulative ``|Δm|`` along the
+        path, with ``m = (R+G+B)/3`` (linear spacing along the grayscale /
+        achromatic diagonal in RGB), plus a tiny RGB chord term where ``m`` is
+        nearly flat. Uniform ``t`` alone bunches samples toward the endpoints
+        on rational quadratics.
 
     Returns
     -------
@@ -284,7 +283,7 @@ def hotcold(lutsize=256, neutral=1/3, interp=None, weight=1.0):
     p_end2 = np.asarray(data[4], dtype=float)
 
     n_half = lutsize // 2
-    # Dense uniform t, then resample by cumulative |Δ HSL lightness| along the path
+    # Dense uniform t, then resample by cumulative |Δ(R+G+B)/3| along the path
     # (uniform Bézier t bunches samples toward the endpoints on rational quadratics).
     n_dense = max(8192, lutsize * 64)
     t_dense = np.linspace(0.0, 1.0, n_dense)
@@ -292,8 +291,8 @@ def hotcold(lutsize=256, neutral=1/3, interp=None, weight=1.0):
     rgb1_dense = _ratquad_bezier_rgb(p0, p_mid1, p_end1, weight, t_dense)
     rgb2_dense = _ratquad_bezier_rgb(p0, p_mid2, p_end2, weight, t_dense)
 
-    rgb1 = _resample_uniform_hsl_lightness(rgb1_dense, n_half)
-    rgb2 = _resample_uniform_hsl_lightness(rgb2_dense, n_half)
+    rgb1 = _resample_uniform_grayscale_axis(rgb1_dense, n_half)
+    rgb2 = _resample_uniform_grayscale_axis(rgb2_dense, n_half)
 
     ynew = np.concatenate((rgb1[1:][::-1], rgb2))
     np.clip(ynew, 0.0, 1.0, out=ynew)

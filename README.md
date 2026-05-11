@@ -6,7 +6,11 @@ Hot and cold colormap for diverging data
 
 GitHub shows APA and BibTeX from [`CITATION.cff`](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files) via **Cite this repository** on the repo home page.
 
-For a **DOI** (recommended for long-term archival), use [Zenodo’s GitHub integration](https://help.zenodo.org/docs/github/): enable the integration for this repo, then publish a [GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) (or push a `v*` semver tag so the [release workflow](.github/workflows/release.yml) creates one). Zenodo archives each release and issues a version DOI. After the first Zenodo archive, add that DOI to the top-level `doi` field in `CITATION.cff` so citations include it.
+For a **DOI** (recommended for long-term archival), use [Zenodo’s GitHub integration](https://help.zenodo.org/docs/github/): enable the integration for this repo, then publish a [GitHub Release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository) (or push a version tag matching `v*` so the [release workflow](.github/workflows/release.yml) creates one). Zenodo archives each release and issues a version DOI. After the first Zenodo archive, add that DOI to the top-level `doi` field in `CITATION.cff` so citations include it.
+
+Pushing a `v*` tag also runs a **PyPI** upload job using [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (`id-token: write` and the `pypi` [GitHub environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)). Configure the project and workflow on PyPI before relying on it; until then the publish step fails while the GitHub Release still succeeds.
+
+Continuous integration runs a small **import/smoke** job on pushes and pull requests (see [.github/workflows/ci.yml](.github/workflows/ci.yml)); there is no pytest suite in this repository yet, so the heavier Ruff/pytest/Codecov matrix from a typical library is not copied here.
 
 ## Installation
 

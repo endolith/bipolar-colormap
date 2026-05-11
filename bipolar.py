@@ -25,10 +25,21 @@ def _ratquad_bezier_rgb(p0, p1, p2, w, t):
     return num / den[:, np.newaxis]
 
 
-def _arc_length_uniform_rgb(rgb_dense, n_samples):
+def _hsl_lightness_rgb(rgb):
+    """HSL lightness L = (max(R,G,B) + min(R,G,B)) / 2; rgb is (n, 3)."""
+    rgb = np.asarray(rgb, dtype=float)
+    mx = np.max(rgb, axis=1)
+    mn = np.min(rgb, axis=1)
+    return (mx + mn) * 0.5
+
+
+def _resample_uniform_hsl_lightness(rgb_dense, n_samples, rgb_mix=1e-4):
     """
-    Resample points so consecutive rows are approximately equally spaced
-    in Euclidean RGB along the polyline through rgb_dense.
+    Resample the polyline through rgb_dense so LUT steps advance ~uniformly
+    in cumulative |ΔL| along the path, where L is HSL lightness (the same L as
+    in ``colorsys.rgb_to_hls``). Grays (R=G=B) lie on the RGB diagonal and have
+    L=t. A small Euclidean RGB term keeps spacing well-defined where L is
+    flat along saturated segments (uniform Bézier t still bunches there).
     """
     n_samples = int(n_samples)
     rgb_dense = np.asarray(rgb_dense, dtype=float)
@@ -36,9 +47,15 @@ def _arc_length_uniform_rgb(rgb_dense, n_samples):
         raise ValueError('n_samples must be at least 2')
     if len(rgb_dense) < 2:
         return np.repeat(rgb_dense[:1], n_samples, axis=0)
-    seg_len = np.linalg.norm(np.diff(rgb_dense, axis=0), axis=1)
-    cum = np.concatenate([[0.0], np.cumsum(seg_len)])
+    L = _hsl_lightness_rgb(rgb_dense)
+    dL = np.abs(np.diff(L))
+    drgb = np.linalg.norm(np.diff(rgb_dense, axis=0), axis=1)
+    seg = dL + rgb_mix * drgb
+    cum = np.concatenate([[0.0], np.cumsum(seg)])
     s_max = cum[-1]
+    if s_max <= 0:
+        cum = np.concatenate([[0.0], np.cumsum(drgb)])
+        s_max = cum[-1]
     targets = np.linspace(0.0, s_max, n_samples)
     return np.column_stack([
         np.interp(targets, cum, rgb_dense[:, 0]),
@@ -184,9 +201,11 @@ def hotcold(lutsize=256, neutral=1/3, interp=None, weight=1.0):
     weight : float, optional
         Rational Bézier weight on the middle control point for each smooth
         segment through the RGB cube (default 1). Larger values pull the path
-        toward the middle control; sampling uses arc length in RGB so lookup
-        steps stay evenly spaced along the path (uniform Bézier parameter
-        would bunch samples toward the endpoints).
+        toward the middle control. Lookup rows are resampled from a dense
+        uniform-`t` Bézier using ~uniform steps in cumulative HSL lightness
+        change along the path (with a tiny RGB chord term where L is flat),
+        instead of uniform `t` (which bunches samples toward the endpoints;
+        see issue #2).
 
     Returns
     -------
@@ -265,16 +284,16 @@ def hotcold(lutsize=256, neutral=1/3, interp=None, weight=1.0):
     p_end2 = np.asarray(data[4], dtype=float)
 
     n_half = lutsize // 2
-    # Dense uniform t, then arc-length resample so LUT steps are evenly spaced in RGB
-    # (uniform Bézier parameter bunches samples toward the endpoints on rational quadratics).
+    # Dense uniform t, then resample by cumulative |Δ HSL lightness| along the path
+    # (uniform Bézier t bunches samples toward the endpoints on rational quadratics).
     n_dense = max(8192, lutsize * 64)
     t_dense = np.linspace(0.0, 1.0, n_dense)
 
     rgb1_dense = _ratquad_bezier_rgb(p0, p_mid1, p_end1, weight, t_dense)
     rgb2_dense = _ratquad_bezier_rgb(p0, p_mid2, p_end2, weight, t_dense)
 
-    rgb1 = _arc_length_uniform_rgb(rgb1_dense, n_half)
-    rgb2 = _arc_length_uniform_rgb(rgb2_dense, n_half)
+    rgb1 = _resample_uniform_hsl_lightness(rgb1_dense, n_half)
+    rgb2 = _resample_uniform_hsl_lightness(rgb2_dense, n_half)
 
     ynew = np.concatenate((rgb1[1:][::-1], rgb2))
     np.clip(ynew, 0.0, 1.0, out=ynew)

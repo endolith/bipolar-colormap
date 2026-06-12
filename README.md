@@ -10,7 +10,7 @@ For a **DOI** (recommended for long-term archival), use [Zenodo’s GitHub integ
 
 Pushing a `vX.Y.Z` tag also runs a **PyPI** upload job using [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (`id-token: write` and the `pypi` [GitHub environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)). Configure the project and workflow on PyPI before relying on it; until then the publish step fails while the GitHub Release still succeeds.
 
-Continuous integration runs a small **import/smoke** job on pushes and pull requests (see [.github/workflows/ci.yml](.github/workflows/ci.yml)); there is no pytest suite in this repository yet, so the heavier Ruff/pytest/Codecov matrix from a typical library is not copied here.
+Continuous integration runs **pytest** and **Ruff** on Python 3.10–3.12 for pushes and pull requests (see [.github/workflows/ci.yml](.github/workflows/ci.yml)).
 
 ## Installation
 
@@ -25,7 +25,13 @@ pip install .
 Editable install while developing:
 
 ```bash
-pip install -e .
+pip install -e ".[dev]"
+```
+
+Run tests locally:
+
+```bash
+pytest
 ```
 
 The import name is still `bipolar` (`from bipolar import bipolar, hotcold`). Optional dependencies used by `examples/comparison.py`:

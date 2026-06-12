@@ -22,10 +22,25 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "ruff>=0.4",
+]
 examples = [
     "cmasher>=1.5",
     "colorcet>=2.0",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = ["examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
 
 [project.urls]
 Homepage = "https://github.com/endolith/bipolar-colormap"

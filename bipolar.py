@@ -14,6 +14,54 @@ import scipy.interpolate
 from matplotlib import cm
 
 
+def _ratquad_bezier_rgb(p0, p1, p2, w, t):
+    """Rational quadratic Bézier in RGB; p* are shape (3,), t is 1d."""
+    t = np.asarray(t, dtype=float)
+    om = 1.0 - t
+    den = om * om + 2.0 * w * om * t + t * t
+    num = ((om[:, np.newaxis] ** 2) * p0
+           + (2.0 * w * om[:, np.newaxis] * t[:, np.newaxis]) * p1
+           + (t[:, np.newaxis] ** 2) * p2)
+    return num / den[:, np.newaxis]
+
+
+def _grayscale_axis_coordinate_rgb(rgb):
+    """Scalar along the achromatic diagonal: (R+G+B)/3 for each row; rgb is (n, 3)."""
+    rgb = np.asarray(rgb, dtype=float)
+    return rgb.mean(axis=1)
+
+
+def _resample_uniform_grayscale_axis(rgb_dense, n_samples, rgb_mix=1e-4):
+    """
+    Resample the polyline through ``rgb_dense`` so LUT steps advance ~uniformly
+    in cumulative ``|Δm|`` with ``m = (R+G+B)/3`` (projection onto the gray
+    diagonal in RGB). A small Euclidean RGB term keeps spacing well-defined
+    where ``m`` is flat along the path; if the combined metric collapses,
+    fall back to RGB chord length only.
+    """
+    n_samples = int(n_samples)
+    rgb_dense = np.asarray(rgb_dense, dtype=float)
+    if n_samples < 2:
+        raise ValueError('n_samples must be at least 2')
+    if len(rgb_dense) < 2:
+        return np.repeat(rgb_dense[:1], n_samples, axis=0)
+    m = _grayscale_axis_coordinate_rgb(rgb_dense)
+    dm = np.abs(np.diff(m))
+    drgb = np.linalg.norm(np.diff(rgb_dense, axis=0), axis=1)
+    seg = dm + rgb_mix * drgb
+    cum = np.concatenate([[0.0], np.cumsum(seg)])
+    s_max = cum[-1]
+    if s_max <= 0:
+        cum = np.concatenate([[0.0], np.cumsum(drgb)])
+        s_max = cum[-1]
+    targets = np.linspace(0.0, s_max, n_samples)
+    return np.column_stack([
+        np.interp(targets, cum, rgb_dense[:, 0]),
+        np.interp(targets, cum, rgb_dense[:, 1]),
+        np.interp(targets, cum, rgb_dense[:, 2]),
+    ])
+
+
 def bipolar(lutsize=256, neutral=1/3, interp=None):
     """
     Bipolar hot/cold colormap, with neutral central color.
@@ -123,7 +171,7 @@ def bipolar(lutsize=256, neutral=1/3, interp=None):
                                                        lutsize)
 
 
-def hotcold(lutsize=256, neutral=1/3, interp=None):
+def hotcold(lutsize=256, neutral=1/3, interp=None, weight=1.0):
     """
     Bipolar hot/cold colormap, with neutral central color.
 
@@ -147,11 +195,16 @@ def hotcold(lutsize=256, neutral=1/3, interp=None):
         For 2D heat maps, a `neutral` near the 0 or 1 extremes is better, for
         maximizing luminance change and showing details of the data.
     interp : str or int, optional
-        Specifies the type of interpolation.
-        ('linear', 'nearest', 'zero', 'slinear', 'quadratic, 'cubic')
-        or as an integer specifying the order of the spline interpolator
-        to use. Default is 'linear' for dark neutral and 'cubic' for light
-        neutral.  See `scipy.interpolate.interp1d`.
+        Accepted for API compatibility with :func:`bipolar`; ignored here.
+    weight : float, optional
+        Rational Bézier weight on the middle control point for each smooth
+        segment through the RGB cube (default 1). Larger values pull the path
+        toward the middle control. Lookup rows are resampled from a dense
+        uniform-`t` Bézier using ~uniform steps in cumulative ``|Δm|`` along the
+        path, with ``m = (R+G+B)/3`` (linear spacing along the grayscale /
+        achromatic diagonal in RGB), plus a tiny RGB chord term where ``m`` is
+        nearly flat. Uniform ``t`` alone bunches samples toward the endpoints
+        on rational quadratics.
 
     Returns
     -------
@@ -220,55 +273,29 @@ def hotcold(lutsize=256, neutral=1/3, interp=None):
     else:
         raise ValueError('n must be 0.0 < n < 1.0')
 
-    t = np.linspace(0, 1, lutsize//2)
+    if weight <= 0:
+        raise ValueError('weight must be positive')
 
-    # Super ugly Bezier curve
-    # Do 2, one for each half, from nnn to 100 and from 001 to nnn
+    p0 = np.asarray(data[2], dtype=float)
+    p_mid1 = np.asarray(data[1], dtype=float)
+    p_end1 = np.asarray(data[0], dtype=float)
+    p_mid2 = np.asarray(data[3], dtype=float)
+    p_end2 = np.asarray(data[4], dtype=float)
 
-    x1 = data[2][0]
-    y1 = data[2][1]
-    z1 = data[2][2]
+    n_half = lutsize // 2
+    # Dense uniform t, then resample by cumulative |Δ(R+G+B)/3| along the path
+    # (uniform Bézier t bunches samples toward the endpoints on rational quadratics).
+    n_dense = max(8192, lutsize * 64)
+    t_dense = np.linspace(0.0, 1.0, n_dense)
 
-    xc = data[1][0]
-    yc = data[1][1]
-    zc = data[1][2]
+    rgb1_dense = _ratquad_bezier_rgb(p0, p_mid1, p_end1, weight, t_dense)
+    rgb2_dense = _ratquad_bezier_rgb(p0, p_mid2, p_end2, weight, t_dense)
 
-    x2 = data[0][0]
-    y2 = data[0][1]
-    z2 = data[0][2]
-
-    w = 1  # weight
-
-    r1 = (((1 - t)**2*x1 + 2*(1 - t)*t*w*xc + t**2*x2) /
-          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
-    g1 = (((1 - t)**2*y1 + 2*(1 - t)*t*w*yc + t**2*y2) /
-          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
-    b1 = (((1 - t)**2*z1 + 2*(1 - t)*t*w*zc + t**2*z2) /
-          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
-
-    x1 = data[2][0]
-    y1 = data[2][1]
-    z1 = data[2][2]
-
-    xc = data[3][0]
-    yc = data[3][1]
-    zc = data[3][2]
-
-    x2 = data[4][0]
-    y2 = data[4][1]
-    z2 = data[4][2]
-
-    r2 = (((1 - t)**2*x1 + 2*(1 - t)*t*w*xc + t**2*x2) /
-          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
-    g2 = (((1 - t)**2*y1 + 2*(1 - t)*t*w*yc + t**2*y2) /
-          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
-    b2 = (((1 - t)**2*z1 + 2*(1 - t)*t*w*zc + t**2*z2) /
-          ((1 - t)**2 + 2*(1 - t)*t*w + t**2))
-
-    rgb1 = np.dstack((r1, g1, b1))[0]
-    rgb2 = np.dstack((r2, g2, b2))[0]
+    rgb1 = _resample_uniform_grayscale_axis(rgb1_dense, n_half)
+    rgb2 = _resample_uniform_grayscale_axis(rgb2_dense, n_half)
 
     ynew = np.concatenate((rgb1[1:][::-1], rgb2))
+    np.clip(ynew, 0.0, 1.0, out=ynew)
 
     return cm.colors.LinearSegmentedColormap.from_list('hotcold', ynew,
                                                        lutsize)

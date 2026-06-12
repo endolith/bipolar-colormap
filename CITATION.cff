@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: "bipolar-colormap"
+message: "If you use this software, please cite it using the metadata in this file."
+type: software
+authors:
+  - name: endolith
+abstract: >-
+  Hot and cold diverging colormaps for matplotlib, including a Python port of
+  Ged Ridgway's bipolar colormap and a smoother Bézier variant (hotcold).
+keywords:
+  - colormap
+  - matplotlib
+  - diverging colormap
+  - visualization
+  - scientific computing
+license: BSD-2-Clause
+version: 0.1.0
+date-released: "2026-05-11"
+repository-code: "https://github.com/endolith/bipolar-colormap"
+url: "https://github.com/endolith/bipolar-colormap"

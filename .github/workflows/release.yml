@@ -1,0 +1,93 @@
+# On version tags: build wheel/sdist, publish a GitHub Release (notes from the tag
+# and commits since the previous tag), optionally upload to PyPI via Trusted Publishing.
+# Zenodo can archive published releases; see README "Citing this repository".
+
+name: Release
+
+on:
+  push:
+    tags:
+      # Semver release tags only (e.g. v0.1.0), not v1.0.0-beta.1 or vnext.
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install build
+        run: python -m pip install --upgrade pip build
+
+      - name: Build wheel and sdist
+        run: python -m build
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  github-release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Build release notes from tag and commits
+        run: |
+          TAG_BODY=$(git tag -l --format='%(contents)' "${{ github.ref_name }}")
+          {
+            if [ -n "$TAG_BODY" ]; then
+              printf '%s\n\n' "$TAG_BODY"
+            fi
+            PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -z "$PREV_TAG" ]; then
+              git log --oneline --no-merges
+            else
+              git log --oneline --no-merges "${PREV_TAG}..${{ github.ref_name }}"
+            fi
+            printf '\n---\n\n'
+            printf '%s\n' "Artifacts: wheel and sdist from \`python -m build\` (Hatchling). Install with \`pip install ./bipolar_colormap-*.whl\` or \`pip install .\` from a checkout of this tag."
+            printf '\n%s\n' "If [Zenodo GitHub integration](https://help.zenodo.org/docs/github/) is enabled, this release is archived and receives a version DOI; add that DOI to \`CITATION.cff\` on the default branch for the GitHub citation widget."
+          } > notes.txt
+
+      - name: Create GitHub release
+        run: gh release create "${{ github.ref_name }}" dist/* --notes-file notes.txt --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

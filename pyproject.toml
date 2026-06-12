@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bipolar-colormap"
+version = "0.1.0"
+description = "Hot and cold colormap for diverging data"
+readme = "README.md"
+license = "BSD-2-Clause"
+license-files = ["LICENSE.txt"]
+authors = [{ name = "endolith" }]
+requires-python = ">=3.8"
+dependencies = [
+    "matplotlib>=3.3",
+    "numpy>=1.19",
+    "scipy>=1.5",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7",
+    "ruff>=0.4",
+]
+examples = [
+    "cmasher>=1.5",
+    "colorcet>=2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = ["examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[project.urls]
+Homepage = "https://github.com/endolith/bipolar-colormap"
+Repository = "https://github.com/endolith/bipolar-colormap.git"
+
+# Distribution name is bipolar-colormap; importable module is bipolar.py (not bipolar_colormap.py).
+[tool.hatch.build.targets.wheel]
+only-include = ["bipolar.py"]

@@ -25,7 +25,7 @@ pip install .
 Editable install while developing:
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[test]"
 ```
 
 Run tests locally:

@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = [
+test = [
     "pytest>=7",
     "ruff>=0.4",
 ]
